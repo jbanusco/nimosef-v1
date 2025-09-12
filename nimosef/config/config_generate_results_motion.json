@@ -1,0 +1,10 @@
+{
+    "data_folder": "/usr/data/",
+    "save_folder": "/usr/data/derivatives/nimosef_flip_logs/baseline",
+    "split_file": "derivatives/nimosef_flip_logs/train_val_test_split.json",
+    "num_subjects": 1000,
+    "mode": "train",
+    "experiment_name": "experiment_20250311_001426",
+    "res_factor_z": 1,
+    "reprocess": false
+}

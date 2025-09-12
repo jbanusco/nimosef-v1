@@ -1,0 +1,7 @@
+{
+    "load_dir": "/usr/data/",
+    "number_patients": 1000,
+    "split_ratios": [0.7, 0.15, 0.15],
+    "split_file": "derivatives/nimosef_flip_logs/train_val_test_split.json",
+    "force_overwrite": false
+}
