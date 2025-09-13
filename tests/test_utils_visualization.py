@@ -1,6 +1,7 @@
 import numpy as np
 import torch
-from nimosef.utils.visualization import label_to_color, compute_label_volumes, compute_distance_pts
+from nimosef.metrics.pc_metrics import compute_distance_pts
+from nimosef.utils.visualization import label_to_color, compute_label_volumes
 
 
 def test_label_to_color_default_and_custom():

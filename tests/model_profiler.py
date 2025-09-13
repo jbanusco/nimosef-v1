@@ -22,9 +22,9 @@ def get_options():
     dataset_split = 'train'
 
     number_patients = 4
-    save_folder = os.path.join(data_folder, "derivatives", "nimosef")
+    save_folder = os.path.join(data_folder, "derivatives", "nimosef_v1")
     save_profile_folder = os.path.join(save_folder, "profiler")
-    model_filename = os.path.join(save_folder, "experiment_20250906_140021", "checkpoint_80.pth")
+    model_filename = os.path.join(save_folder, "experiment_20250913_104611", "checkpoint_final.pth")
     
     lr_shape_code = 1e-3
     lr = 5e-4
@@ -127,27 +127,6 @@ def main():
     ], weight_decay=0)
 
     # Instantiate loss module
-    # Log hyperparameters
-    # hparams = {
-    #     "latent_size": args.latent_size,
-    #     "motion_size": args.motion_size,
-    #     "hidden_size": args.hidden_size,
-    #     "num_res_layers": args.num_res_layers,
-    #     "linear_head": args.linear_head,
-    #     "lr": args.lr,
-    #     "lr_shape_code": args.lr_shape_code,
-    #     "lambda_rec": args.lambda_rec,
-    #     "lambda_seg": args.lambda_seg,
-    #     "lambda_reg": args.lambda_reg,
-    #     "lambda_dsp": args.lambda_dsp,
-    #     "lambda_reg_dsp": args.lambda_reg_dsp,
-    #     "lambda_jacobian": args.lambda_jacobian,
-    #     "lambda_graph_conn": args.lambda_graph_conn,
-    #     "lambda_smoothness": args.lambda_smoothness,
-    #     "warmup_epochs": args.warmup_epochs,
-    #     "max_dsp_weight": args.max_dsp_weight,
-    # }
-    # loss_module = CompositeLoss(is_test=False, device=device, hp_dict=hparams)
     loss_module = CompositeLoss(is_test=False, device=device)
 
     # Create a GradScaler for mixed precision training

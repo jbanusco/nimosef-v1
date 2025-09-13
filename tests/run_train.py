@@ -5,9 +5,9 @@ from nimosef.training.args import get_train_parser
 def main():
     data_path = os.environ.get("DATA_PATH", "/media/jaume/DATA/Data/Test_NIMOSEF_Dataset")
     manifest_file = os.path.join(data_path, "derivatives", "manifests_nimosef", "dataset_manifest.json")
-    save_folder = os.path.join(data_path, "derivatives", "nimosef")
-    previous_checkpoint = os.path.join(data_path, "derivatives/nimosef/experiment_20250909_153354/checkpoint_final.pth")
-    model_path = os.path.join(data_path, "derivatives/nimosef/experiment_20250909_104844/model.pth")
+    save_folder = os.path.join(data_path, "derivatives", "nimosef_v1")
+    previous_checkpoint = os.path.join(data_path, "derivatives/nimosef_v1/experiment_20250909_153354/checkpoint_final.pth")
+    model_path = os.path.join(data_path, "derivatives/nimosef_v1/experiment_20250909_104844/model.pth")
 
     # Load parser with defaults
     parser = get_train_parser()
@@ -17,7 +17,7 @@ def main():
         "--save_folder", save_folder,
         "--checkpoint_filename", previous_checkpoint,
         "--resume_from_checkpoint", "False",
-        "--load_model", "True",
+        "--load_model", "False",
         "--model_path", model_path,
         "--batch_size", "1",
         "--prefetch_factor", "2",

@@ -50,7 +50,7 @@ def test_dice_loss_perfect_prediction():
     N, C = 6, 3
     target = torch.randint(0, C, (N,))
     pred = torch.nn.functional.one_hot(target, num_classes=C).float()
-    loss = dice_loss(pred, target, num_classes=C, weighted=False)
+    loss = dice_loss(pred, target, num_classes=C, weighted=False, apply_softmax=False)
     # Perfect match → Dice loss = 0
     assert torch.allclose(loss, torch.zeros_like(loss), atol=1e-6)
 

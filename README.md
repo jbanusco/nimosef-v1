@@ -4,7 +4,7 @@ Official repository for the MICCAI 2025 paper:
 
 **NIMOSEF: Neural Implicit Motion and Segmentation Functions**
 
-📄 _To appear at MICCAI 2025_
+Available here: https://papers.miccai.org/miccai-2025/0638-Paper4418.html
 
 ---
 
@@ -149,4 +149,14 @@ Geometry-aware analysis = in .parquet boundary/displacement files.
 ## Citation
 
 If you use or refer to NIMOSEF, please cite:
-[to fill]
+
+@InProceedings{BanJau_NIMOSEF_MICCAI2025,
+        author = { Banus, Jaume and Delaloye, Antoine and M. Gordaliza, Pedro and Georgantas, Costa and B. van Heeswijk, Ruud and Richiardi, Jonas},
+        title = { { NIMOSEF: Neural implicit motion and segmentation functions } },
+        booktitle = {proceedings of Medical Image Computing and Computer Assisted Intervention -- MICCAI 2025},
+        year = {2025},
+        publisher = {Springer Nature Switzerland},
+        volume = {LNCS 15970},
+        month = {September},
+
+}

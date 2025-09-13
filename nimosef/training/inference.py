@@ -8,7 +8,7 @@ import math
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from nimosef.models.nimosef import MultiHeadNetwork, SliceCorrection
+from nimosef.models.nimosef import MultiHeadNetwork
 from nimosef.data.dataset import NiftiDataset, nifti_collate_fn
 from nimosef.training.logging import TrainingLogger, LossTracker
 from nimosef.training.schedulers import ClampedStepLR

@@ -26,18 +26,18 @@ cat ${data_path}/derivatives/manifests_nimosef/dataset_manifest.json
 python -m tests.run_train
 
 # Tensorboard
-tensorboard --logdir ${data_path}/derivatives/nimosef --port 6006
+tensorboard --logdir ${data_path}/derivatives/nimosef_v1 --port 6006
 
 # Run inference
 python -m tests.run_inference
 
 splits_filename=${data_path}/derivatives/manifests_nimosef/dataset_manifest.json
-model_filename=${data_path}/derivatives/nimosef/experiment_20250907_183826/model.pth
-model_filename=${data_path}/derivatives/nimosef/experiment_20250908_223712/model.pth
-model_filename=${data_path}/derivatives/nimosef/experiment_20250909_104844/model.pth
+model_filename=${data_path}/derivatives/nimosef_v1/experiment_20250907_183826/model.pth
+model_filename=${data_path}/derivatives/nimosef_v1/experiment_20250908_223712/model.pth
+model_filename=${data_path}/derivatives/nimosef_v1/experiment_20250909_104844/model.pth
 
 # Generate results
-results_folder=${data_path}/derivatives/nimosef_results
+results_folder=${data_path}/derivatives/nimosef_v1_results
 python -m nimosef.training.generate_results \
     --data_folder ${data_path} \
     --split_file ${splits_filename} \
@@ -69,7 +69,7 @@ python -m nimosef.analysis.save_mean_img \
     --overwrite_imgs True   
 
 # Higher resolution
-results_folder=${data_path}/derivatives/nimosef_results_hr
+results_folder=${data_path}/derivatives/nimosef_v1_results_hr
 python -m nimosef.training.generate_results \
     --data_folder ${data_path} \
     --split_file ${splits_filename} \
@@ -88,10 +88,7 @@ python -m nimosef.training.generate_results \
 # pytest -q tests/test_metrics.py 
 # pytest -q tests/test_nimosef_model.py
 # pytest -q tests/test_utils_core.py
-# pytest -q tests/test_utils_geometry.py
 # pytest -q tests/test_utils_visualization.py 
 # pytest -q tests/test_utils_viz3d.py
-# pytest -q tests/test_evaluate.py 
-# pytest -q tests/test_decode_latent.py 
-# pytest -q tests/test_geometry.py 
 # pytest -q tests/test_logging.py
+# pytest -q tests/test_schedulers.py

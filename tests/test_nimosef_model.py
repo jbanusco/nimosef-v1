@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import pytest
 from nimosef.models.layers import WIRE, INR
 from nimosef.models.nimosef import MultiHeadNetwork
@@ -76,6 +77,7 @@ def test_multiheadnetwork_forward_shapes():
     sample_idx = torch.randint(0, num_subjects, (N,))
 
     seg_pred, intensity_pred, displacement, h = model(coords, time, sample_idx)
+    seg_pred = F.softmax(seg_pred, dim=1)
 
     assert seg_pred.shape == (N, num_labels)
     assert torch.allclose(seg_pred.sum(dim=1), torch.ones(N), atol=1e-5), "Segmentation must be softmax normalized"
@@ -95,10 +97,9 @@ def test_multiheadnetwork_decode_latent():
     N = 10
     coords = torch.rand(N, 3)
     time = torch.rand(N, 1)
-    h = torch.rand(N, latent_size)
-    corr_code = torch.rand(N, model.correction_size)
+    h = torch.rand(N, latent_size)    
 
-    latent_t = model.decode_latent(coords, time, h, corr_code)
+    latent_t = model.decode_latent(coords, time, h)
     assert latent_t.shape == (N, latent_size)
 
 
@@ -256,8 +257,7 @@ def test_multiheadnetwork_numerical_grad_embeddings():
     loss = loss_fn()
     loss.backward()
 
-    autograd_grad_shape = model.shape_code.weight.grad.clone()
-    autograd_grad_corr = model.correction_code.weight.grad.clone()
+    autograd_grad_shape = model.shape_code.weight.grad.clone()    
 
     # finite difference (shape_code weights)
     shape_weight = model.shape_code.weight.data.clone()
@@ -273,22 +273,7 @@ def test_multiheadnetwork_numerical_grad_embeddings():
         model.shape_code.weight.data.view(-1)[i] = orig
         fd_grad_shape.view(-1)[i] = (f_pos - f_neg) / (2 * eps)
 
-    # finite difference (correction_code weights)
-    corr_weight = model.correction_code.weight.data.clone()
-    fd_grad_corr = torch.zeros_like(corr_weight)
-
-    for i in range(corr_weight.numel()):
-        orig = corr_weight.view(-1)[i].item()
-        model.correction_code.weight.data.view(-1)[i] = orig + eps
-        f_pos = loss_fn().item()
-        model.correction_code.weight.data.view(-1)[i] = orig - eps
-        f_neg = loss_fn().item()
-        model.correction_code.weight.data.view(-1)[i] = orig
-        fd_grad_corr.view(-1)[i] = (f_pos - f_neg) / (2 * eps)
-
     # Compare
     diff_shape = (autograd_grad_shape - fd_grad_shape).abs().mean().item()
-    diff_corr = (autograd_grad_corr - fd_grad_corr).abs().mean().item()
 
     assert diff_shape < 1e-2, f"Shape embedding gradient mismatch too large: {diff_shape}"
-    assert diff_corr < 1e-2, f"Correction embedding gradient mismatch too large: {diff_corr}"

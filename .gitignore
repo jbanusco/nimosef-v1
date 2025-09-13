@@ -6,6 +6,12 @@ __pycache__/
 dist/
 build/
 
+# VSCode
+.vscode/
+
+# Pytest
+.pytest_cache/
+
 # Notebooks
 .ipynb_checkpoints/
 

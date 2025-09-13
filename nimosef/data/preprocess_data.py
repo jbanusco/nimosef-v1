@@ -15,8 +15,8 @@ def preprocess_subject(subj_id, img_path, seg_path, coords_path, bbox, save_root
     """Process one subject, save parquet + subject manifest."""
 
     manifest_path = os.path.join(manifest_dir, f"{subj_id}.json")
-    # if os.path.isfile(manifest_path):
-    #     return manifest_path
+    if os.path.isfile(manifest_path):
+        return manifest_path
 
     # Load NIfTI
     image = nib.load(img_path)
