@@ -60,16 +60,18 @@ def test_composite_loss_backward():
 
 def numerical_grad(f, x, eps=1e-4):
     grad = torch.zeros_like(x)
-    flat_x = x.view(-1)
-    flat_grad = grad.view(-1)
+    flat_x = x.view(-1).unsqueeze(-1)
+    flat_grad = grad.view(-1)    
     for i in range(flat_x.numel()):
         orig = flat_x[i].item()
         flat_x[i] = orig + eps
         f_pos = f(x).item()
         flat_x[i] = orig - eps
         f_neg = f(x).item()
-        flat_x[i] = orig
+        flat_x[i] = orig        
         flat_grad[i] = (f_pos - f_neg) / (2 * eps)
+        # print(f_pos)
+        # print(f_neg)
     return grad
 
 
@@ -82,7 +84,8 @@ def test_composite_loss_numerical_grad_intensity():
 
     def loss_fn(x):
         preds_t0_mod = dict(preds_t0)
-        preds_t0_mod["intensity_pred"] = x
+        preds_t0_mod["intensity_pred"] = x#.unsqueeze(-1)
+        # print(preds_t0_mod)
         total, _ = comp(sample_id, coords, resolution, preds_t0_mod, preds_t, targets_t0, targets_t)
         return total
 
@@ -90,6 +93,8 @@ def test_composite_loss_numerical_grad_intensity():
     total.backward()
     autograd_grad = intensity_pred.grad.clone()
 
-    fd_grad = numerical_grad(loss_fn, intensity_pred.detach().clone())
+    fd_grad = numerical_grad(loss_fn, intensity_pred.detach().clone(), eps=1e-4)
+    # print(autograd_grad)
+    # print(fd_grad)
     diff = (autograd_grad - fd_grad).abs().mean().item()
     assert diff < 1e-2, f"Gradient mismatch too large: {diff}"

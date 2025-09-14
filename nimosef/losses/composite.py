@@ -49,6 +49,7 @@ class CompositeLoss(nn.Module):
         pred_int_t = preds_t["intensity_pred"][..., 0]
         L_intensity = self.rec_loss(pred_int_t0, targets_t0["intensity"]).mean()
         L_intensity += self.rec_loss(pred_int_t, targets_t["intensity"]).mean()
+        # print(L_intensity)
 
         # ================================
         # 2. Segmentation Loss (Dice + CE)
@@ -191,6 +192,13 @@ class CompositeLoss(nn.Module):
             L_smooth = L_smooth_int + L_smooth_seg
             # L_smooth = torch.tensor(0.0).to(self.device)
 
+        if torch.isnan(L_smooth_int) or torch.isnan(L_smooth_seg):
+            # For the tests
+            print("WARNING! NaN in the smooth components")
+            L_Jfold, L_Jvol, L_smooth_int, L_smooth_seg = (torch.tensor(0.0).to(self.device),) * 4
+            L_J = L_Jfold + L_Jvol * self.lambda_vol
+            L_smooth = L_smooth_int + L_smooth_seg
+
         # =============================
         # Aggregate the loss components
         # =============================
@@ -203,7 +211,7 @@ class CompositeLoss(nn.Module):
             + self.lambda_graph_conn * L_graph
             + self.lambda_smoothness * L_smooth
         )
-
+        print(total)
         if not self.is_test:
             # Include the segmentation loss
             total += self.lambda_seg * L_seg
@@ -221,5 +229,6 @@ class CompositeLoss(nn.Module):
             "L_smooth_int": L_smooth_int.detach().item(),
             "L_smooth_seg": L_smooth_seg.detach().item(),
         }
+        print(loss_components)
 
         return total, loss_components
