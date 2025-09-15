@@ -48,4 +48,4 @@ singularity exec --nv \
 --bind ${dataset_path}:${docker_data} \
 --bind ${code_path}/src:${docker_code} \
 --bind ${logs_folder}:${docker_log} \
-${singularity_img} /bin/bash -c "cd ${docker_code} && python3 train_network.py ${config_params}"
+${singularity_img} /bin/bash -c "cd ${docker_code} && python -m nimosef.training.train ${config_params}"

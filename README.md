@@ -178,10 +178,6 @@ Additional scripts in `nimosef.analysis` allow computing shape-code distances an
 
 Scripts in `nimosef.visualization` reproduce plots as in the paper (volume curves, feature importance, displacement fields).
 
-Example figures and animations will be available in the docs/ folder:
-- `overview.png` → pipeline overview
-- `motion.gif` → example temporal segmentation + motion trajectories
-
 # How to Use the Outputs
 
 - Visualize reconstructed MR: load `*_rec.nii.gz` in FSLeyes or ITK-SNAP.

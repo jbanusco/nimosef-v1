@@ -54,5 +54,5 @@ print(' '.join(f'--{key} {value}' for key, value in config.items() if value is n
     --bind ${dataset_path}:${docker_data} \
     --bind ${code_path}/src:${docker_code} \
     --bind ${logs_folder}:${docker_log} \
-    ${singularity_img} /bin/bash -c "cd ${docker_code} && python3 save_img_and_boundaries_results.py ${config_params}"
+    ${singularity_img} /bin/bash -c "cd ${docker_code} && python -m nimosef.training.generate_results ${config_params}"
 done
