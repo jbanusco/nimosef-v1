@@ -1,18 +1,17 @@
 # NIMOSEF - v1
 
-Official repository for the MICCAI 2025 paper:
+Official implementation of the MICCAI 2025 paper:
 
-**NIMOSEF: Neural Implicit Motion and Segmentation Functions**
-
-Available here: https://papers.miccai.org/miccai-2025/0638-Paper4418.html
+**NIMOSEF: Neural Implicit Motion and Segmentation Functions**  
+📄 [MICCAI Proceedings](https://papers.miccai.org/miccai-2025/0638-Paper4418.html)
 
 ---
 
 ## About
 
-NIMOSEF is a unified framework that leverages implicit neural representations for joint segmentation, intensity reconstruction, and displacement field estimation in cardiac MRI.
+NIMOSEF is a unified framework that leverages **implicit neural representations (INRs)** for **joint segmentation, intensity reconstruction, and displacement field estimation**, evaluated in cardiac MRI 2D SAX images.
 
-This repository will contain the exact version of the code used in the MICCAI 2025 submission.
+![Workflow](docs/workflow.png)
 
 ---
 
@@ -23,128 +22,176 @@ This repository will contain the exact version of the code used in the MICCAI 20
 
 ---
 
+We recommend using **conda** with Python 3.10.  
+- You can install dependencies via `install_gpu.sh`.  
+- Alternatively, build the provided `Dockerfile`.  
+
+Key dependencies: **PyTorch**, **DGL**, **pytorch3d**.  
+
+---
+## Expected Data Structure
+
+NIMOSEF assumes a **BIDS-like structure** with `sub-*` subjects and `derivatives/` folders:
+
+<pre>DATASET_ROOT/
+├── sub-0001/
+│ └── anat/
+│ │ └── sub-0001_img-short_axis_tp-2.nii.gz
+├── derivatives/
+│ ├── sa_segmentation/
+│ │ └── sub-0001/sub-0001_sa_seg_all_corrected.nii.gz
+│ │ └── sub-0001/sub-0001_sa_seg.nii.gz
+│ ├── sa_coordinates/
+│ │ └── sub-0001/sa_axis_affine.tfm
+│ │ └── sub-0001/sa_axis_transform.tfm
+│ └── sa_roi/ (optional)
+│ │ └── sub-0001/sub-0001_sa.nii.gz
+</pre>
+
+- `sa_roi/` contains cropped ROI short-axis images, aligned with `*_sa_seg.nii.gz`.  
+- `*_sa_seg_all_corrected.nii.gz` is the segmentation of the original (non-ROI) image.  
+- `sa_coordinates/` contains affine transforms (`.tfm`) and local-axis transforms.  
+  Each subject’s local axis is defined by LV→RV (short axis), apex→base (long axis), and their cross-product.  
+
+The preprocessing scripts can be adapted to change the expected filenames and folders.
+During preprocessing, additional folders are generated (default names):  
+
+- `derivatives/implicit/` → parquet + npz arrays  
+- `derivatives/manifests_nimosef/` → subject manifests + dataset splits  
+- `derivatives/nimosef_v1/` → training runs, checkpoints, logs  
+- `derivatives/nimosef_v1_results/` → result outputs  
+
+---
+
 ## Quick Start
 
-### 1. Preprocess raw NIfTI into parquet
+### 1. Preprocess data
+
+Convert raw NIfTI into parquet + manifests:
+
 ```bash
-python scripts/preprocess_data.py --root /data/ukbb --use-roi
+python -m nimosef.data.preprocess_data \
+  --root /path/to/dataset \
+  --patients -1 \
+  --save-dir implicit \
+  --manifest-dir manifests_nimosef \
+  --use-roi
 ```
 
-### 2. Generate trian/val/test splits
-```bash
-python scripts/generate_splits.py --root /data/ukbb
-```
 
-### 3. Load dataset in PyTorch
+By default, splits are automatically generated taking 0.70 for training, 0.15 for validation and 0.15 for test. You can re-run the split generation script (`nimosef.data.generate_splits`) to create a new `dataset_manifest.json`.
+Then a dataset can be loaded as:
+
+
 ```bash
 from nimosef.data.dataset import NiftiDataset, nifti_collate_fn
 from torch.utils.data import DataLoader
 
-root = "/data/ukbb"
-split_file = f"{root}/train_val_test_split.json"
+split_file = dataset_path/derivatives/manifests_nimosef/dataset_manifest.json
+mode = "train"
 
-train_set = NiftiDataset(root, split_file, mode="train")
+dataset = NiftiDataset(split_file, mode=mode)
 train_loader = DataLoader(train_set, batch_size=2, shuffle=True, collate_fn=nifti_collate_fn)
+
 ```
 
-See docs/data_pipeline.md for full details on preprocessing, splitting, and dataset loading.
+## 2. Train
+
+For a reference implementation, see ```tests/run_train.py```
+Example minimal bash script with default parameters:
+
+```bash
+data_path=/path/to/dataset
+save_folder=${data_path}/derivatives/nimosef_v1
+manifest_file=${data_path}/derivatives/manifests_nimosef/dataset_manifest.json
+
+python -m nimosef.training.train \
+    --data_folder ${data_path} \
+    --split_file ${manifest_file} \
+    --save_folder ${save_folder} \
+    --batch_size 1 \
+    --prefetch_factor 2 \
+    --num_workers 4 \
+    --num_epochs 1000 \
+    --epochs_to_evaluate_validation 250 \
+    --validation_epochs 100
+```
+
+You can also load configs from YAML files such as the ones available in the `config/` folder as shown in the `scripts/` examples.
+
+The training can be monitored with TensorBoard:
+
+```bash
+tensorboard --logdir /path/to/dataset/derivatives/nimosef_v1 --port 6006
+```
 
 ---
 
-## 1. Preprocess & Create Train/Val/Test Split
+## 3. Inference
 
-Convert raw UK Biobank (or similar BIDS-structured) data into .parquet coordinate tables and generate splits:
+Example bash script:
 
-Example with an existing databaset
+```bash
+data_path=/path/to/dataset
+save_folder=${data_path}/derivatives/nimosef_v1
+model_path=${save_folder}/experiment_20250907_183826/checkpoint_last.pth
 
-python scripts/generate_splits.py \
-  --load_dir /path/to/UKB_Cardiac_BIDS \
-  --number_patients 1000 \
-  --split_ratios 0.7 0.15 0.15 \
-  --split_file derivatives/nimosef_flip_logs/train_val_test_split.json
+python -m nimosef.training.inference \
+    --data_folder ${data_path} \
+    --split_file ${data_path}/derivatives/manifests_nimosef/dataset_manifest.json \
+    --save_folder ${save_folder} \
+    --initial_model_path ${model_path}
+```
 
-## 2. rain the Model
+For a reference implementation, see ```tests/run_inference.py```
 
-Train the MultiHeadNetwork on train/val sets:
+## 4. Generate results
 
-python scripts/train.py \
-  --data_folder /path/to/UKB_Cardiac_BIDS \
-  --save_folder derivatives/nimosef_flip_logs/baseline \
-  --split_file derivatives/nimosef_flip_logs/train_val_test_split.json \
-  --num_epochs 1000 \
-  --latent_size 128 --motion_size 64 --hidden_size 128 --num_res_layers 8 \
-  --lambda_rec 2.0 --lambda_seg 1.0 --lambda_dsp 0.5 --lambda_jacobian 1.0
+Reconstruct outputs:
 
-Check logs during training with:
+```bash
+results_folder=/path/to/dataset/derivatives/nimosef_v1_results
 
-tensorboard --logdir derivatives/nimosef_flip_logs/baseline
-
-## 3. Run Inference (Per-Subject Fine-Tuning)
-
-Freeze the trained decoder and fine-tune only the shape codes for unseen test patients:
-
-python scripts/inference.py \
-  --data_folder /path/to/UKB_Cardiac_BIDS \
-  --save_folder derivatives/nimosef_flip_logs/baseline \
-  --split_file derivatives/nimosef_flip_logs/train_val_test_split.json \
-  --mode test \
-  --initial_model_path derivatives/nimosef_flip_logs/baseline/experiment_XXX/model.pth \
-  --validation_epochs 200 \
-  --save_rec_folders derivatives/nimosef_subjects \
-  --load_validation_and_rec True
-
-This produces for each subject:
-*_rec.nii.gz → reconstructed intensity
-*_seg.nii.gz → predicted segmentation
-*_seg_gt.nii.gz → ground-truth segmentation
-
-plus displacement and boundary .parquet files.
-
-⚙️ By default, results are saved in:
-
-derivatives/nimosef_flip_logs/baseline/experiment_YYYYMMDD_HHMMSS/
-derivatives/nimosef_subjects/
-
-## 4. Results
-
-After inference, results for each subject are saved under:
-
-derivatives/nimosef_subjects/{subject_id}/
+python -m nimosef.training.generate_results \
+    --data_folder /path/to/dataset \
+    --split_file /path/to/dataset/derivatives/manifests_nimosef/dataset_manifest.json \
+    --mode train \
+    --model_to_rec ${model_path} \
+    --save_rec_folders ${results_folder} \
+    --res_factor_z 1.0 \
+    --overwrite_imgs True    
+```
+For higher resolution you can modify the `res_factor_z` to `2.0` for example.
+Additional scripts in `nimosef.analysis` allow computing shape-code distances and mean reconstructions.
 
 # Generated Files
-File	Description
-{id}_rec.nii.gz	Reconstructed 4D MR intensity volume (model’s prediction).
-{id}_seg.nii.gz	Predicted 4D segmentation volume (per time frame).
-{id}_seg_gt.nii.gz	Ground-truth segmentation (if available).
-{id}_im_gt.nii.gz	Ground-truth intensity image (if available).
-{id}_pred_boundaries.parquet	Boundary point coordinates (x, y, z, t) predicted by the model. Useful for shape tracking.
-{id}_true_boundaries.parquet	Ground-truth boundary points (if available).
-{id}_displacement.parquet	Predicted displacement vectors at boundary points. Encodes motion across time.
+
+- `{id}_rec.nii.gz`	Reconstructed 4D MR intensity volume (model’s prediction).
+- `{id}_seg.nii.gz`	Predicted 4D segmentation volume (per time frame).
+- `{id}_seg_gt.nii.gz`	Ground-truth segmentation (if available).
+- `{id}_im_gt.nii.gz`	Ground-truth intensity image (if available).
+- `{id}_pred_boundaries.parquet`	Boundary point coordinates (x, y, z, t) predicted by the model. Useful for shape tracking.
+- `{id}_true_boundaries.parquet`	Ground-truth boundary points (if available).
+- `{id}_displacement.parquet`	Predicted displacement vectors at boundary points. Encodes motion across time.
+
+## 5. Visualization
+
+Scripts in `nimosef.visualization` reproduce plots as in the paper (volume curves, feature importance, displacement fields).
+
+Example figures and animations will be available in the docs/ folder:
+- `overview.png` → pipeline overview
+- `motion.gif` → example temporal segmentation + motion trajectories
 
 # How to Use the Outputs
 
-Visualize reconstructed MR
-Load *_rec.nii.gz in FSLeyes or ITK-SNAP to compare against ground truth (*_im_gt.nii.gz).
-
-Evaluate segmentation
-Compare *_seg.nii.gz vs *_seg_gt.nii.gz using Dice coefficient, Hausdorff distance, or volume metrics.
-Example: see losses/get_average_metrics.py.
-
-Analyze motion fields
-Use {id}_displacement.parquet to reconstruct displacement trajectories.
-
-Columns: x, y, z, time = location
-
-Values = 3D displacement vector
-
-Shape tracking
-Boundary .parquet files let you track endocardium/epicardium surfaces across time without voxelization.
+- Visualize reconstructed MR: load `*_rec.nii.gz` in FSLeyes or ITK-SNAP.
+- Evaluate segmentation: compare `*_seg.nii.gz` vs `*_seg_gt.nii.gz` (Dice, Hausdorff, volume metrics). See `losses/get_average_metrics.py`.
+- Analyze motion fields: use `{id}_pred/true_boundaries.parquet` to reconstruct boundary trajectories, this let you track LV/RV surfaces across time without voxelization.
+  - Columns: (x, y, z, time) = locations
 
 This means:
-
-Voxel-wise predictions = in NIfTI files (.nii.gz).
-
-Geometry-aware analysis = in .parquet boundary/displacement files.
+- Voxel-wise predictions are stored in NIfTI files (`.nii.gz`).
+- Geometry-aware analyses are stored in `.parquet` boundary files.
 
 ## Citation
 

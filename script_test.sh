@@ -45,8 +45,7 @@ python -m nimosef.training.generate_results \
     --model_to_rec ${model_filename} \
     --save_rec_folders ${results_folder} \
     --res_factor_z 1.0 \
-    --overwrite_imgs True \
-    --save_motion_corrected True
+    --overwrite_imgs True
 
 # L2 distance and mean shape code
 python -m nimosef.analysis.save_shape_code \
@@ -77,8 +76,7 @@ python -m nimosef.training.generate_results \
     --model_to_rec ${model_filename} \
     --save_rec_folders ${results_folder} \
     --res_factor_z 2.0 \
-    --overwrite_imgs True \
-    --save_motion_corrected True
+    --overwrite_imgs True
 
 # pytest -q tests/test_preprocess_pipeline.py
 # pytest -q -m realdata
