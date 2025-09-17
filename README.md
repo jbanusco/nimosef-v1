@@ -193,6 +193,7 @@ This means:
 
 If you use or refer to NIMOSEF, please cite:
 
+```bibtex
 @InProceedings{BanJau_NIMOSEF_MICCAI2025,
         author = { Banus, Jaume and Delaloye, Antoine and M. Gordaliza, Pedro and Georgantas, Costa and B. van Heeswijk, Ruud and Richiardi, Jonas},
         title = { { NIMOSEF: Neural implicit motion and segmentation functions } },
@@ -201,5 +202,5 @@ If you use or refer to NIMOSEF, please cite:
         publisher = {Springer Nature Switzerland},
         volume = {LNCS 15970},
         month = {September},
-
 }
+```
