@@ -15,13 +15,6 @@ NIMOSEF is a unified framework that leverages **implicit neural representations 
 
 ---
 
-## Status
-
-🕐 The code is currently being prepared and will be uploaded soon.  
-✅ Repository name and structure are stable. Please check back soon.
-
----
-
 We recommend using **conda** with Python 3.10.  
 - You can install dependencies via `install_gpu.sh`.  
 - Alternatively, build the provided `Dockerfile`.  
