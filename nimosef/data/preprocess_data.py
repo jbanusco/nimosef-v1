@@ -9,6 +9,7 @@ import json
 
 from nimosef.data.preprocessing import normalize_intensity, get_rwc, compute_bbox
 from nimosef.data.io import save_parquet_data, save_subject_manifest, save_dataset_manifest, save_subject_arrays_npz, save_subject_arrays_npy, load_subject_manifest
+from nimosef.utils.core import str2bool  # you already had this helper
 
 
 def preprocess_subject(subj_id, img_path, seg_path, coords_path, bbox, save_root, manifest_dir):
@@ -113,7 +114,7 @@ def main():
                         help="Root dataset folder (contains sub-*/ and derivatives/)")
     parser.add_argument("--patients", type=int, default=-1,
                         help="Number of patients to preprocess (default: all)")
-    parser.add_argument("--use-roi", action="store_true",
+    parser.add_argument("--use-roi", type=str2bool, default=False,
                         help="Use ROI images from derivatives/sa_roi instead of full images")
     parser.add_argument("--bbox", type=float, nargs=3, default=None,
                         help="Optional bounding box (x y z). If not set, auto-computed across patients.")
