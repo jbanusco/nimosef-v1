@@ -114,13 +114,13 @@ def main():
                         help="Root dataset folder (contains sub-*/ and derivatives/)")
     parser.add_argument("--patients", type=int, default=-1,
                         help="Number of patients to preprocess (default: all)")
-    parser.add_argument("--use-roi", type=str2bool, default=False,
+    parser.add_argument("--use_roi", type=str2bool, default=False,
                         help="Use ROI images from derivatives/sa_roi instead of full images")
     parser.add_argument("--bbox", type=float, nargs=3, default=None,
                         help="Optional bounding box (x y z). If not set, auto-computed across patients.")
-    parser.add_argument("--save-dir", type=str, default="implicit",
+    parser.add_argument("--save_dir", type=str, default="implicit",
                         help="Directory to save the parquet files and the transforms (inside derivatives/)")
-    parser.add_argument("--manifest-dir", type=str, default="manifests_nimosef",
+    parser.add_argument("--manifest_dir", type=str, default="manifests_nimosef",
                         help="Directory to save per-subject JSON manifests (inside derivatives/)")
 
     args = parser.parse_args()

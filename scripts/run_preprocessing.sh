@@ -3,23 +3,22 @@
 #SBATCH --output=/cluster/home/ja1659/logs/nimosef_res_%A_%a.out
 #SBATCH --error=/cluster/home/ja1659/logs/nimosef_res_%A_%a.err
 #SBATCH --time=24:00:00
-#SBATCH --mem=32G
-#SBATCH --cpus-per-task=12
-##SBATCH --gres=gpu:1
+#SBATCH --mem=16G
+#SBATCH --qos=16cpu
+#SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:rtx6000:1
-#SBATCH --partition=rad
+#SBATCH --partition=rad2
 #SBATCH --account=rad
-#SBATCH --exclude=gpunode01
 
 # Singularity folder
 singularity_path='/data/bdip2/jbanusco/SingularityImages'
 singularity_img=${singularity_path}/nimosef_0.0.sif
 
 # Dataset path
-dataset_path="/data/bdip2/jbanusco/UKB_Cardiac_BIDS"
+dataset_path="/data/bdip2/jbanusco/Test_NIMOSEF_Dataset"
 
 # Code path
-code_path='/cluster/home/ja1659/Code/nimosef'
+code_path="/cluster/home/ja1659/Code/nimosef-v1"
 
 # Logs path
 logs_folder=${dataset_path}/derivatives/nimosef_flip_logs
@@ -31,8 +30,7 @@ docker_code='/usr/src'
 docker_log='/usr/logs'
 
 # Path to config file
-config_file="${code_path}/configs/generate_results_config_baseline_v1.json"
-#config_file="${code_path}/configs/generate_results_config_motion_v1.json"
+config_file="${code_path}/nimosef/config/config_dataset_split.json"
 
 # Loop through res_z_factor values 1 and 2
 for res_z in 1 2; do
@@ -41,18 +39,14 @@ for res_z in 1 2; do
 import json
 with open('${config_file}', 'r') as f:
     config = json.load(f)
-config['res_factor_z'] = ${res_z}  # Overwrite res_factor_z
-if ${res_z} == 2:
-    config['num_subjects'] = 10  # Set num_subjects to 10 when res_factor_z is 2
 print(' '.join(f'--{key} {value}' for key, value in config.items() if value is not None))
 ")
-    echo "Running with res_factor_z=${res_z}"
     echo "Using config parameters: ${config_params}"
 
     # Run inference in the dataset
     singularity exec --nv \
     --bind ${dataset_path}:${docker_data} \
-    --bind ${code_path}/src:${docker_code} \
+    --bind ${code_path}:${docker_code} \
     --bind ${logs_folder}:${docker_log} \
-    ${singularity_img} /bin/bash -c "cd ${docker_code} && python -m nimosef.data.preprocess_data ${config_params}"
+    ${singularity_img} /bin/bash -c "cd ${docker_code} && python3 -m nimosef.data.preprocess_data ${config_params}"
 done

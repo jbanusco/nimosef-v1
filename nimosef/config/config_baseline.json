@@ -1,7 +1,7 @@
 {
     "data_folder": "/usr/data",
-    "save_folder": "/usr/data/derivatives/nimosef_flip_logs/baseline",
-    "split_file": "derivatives/nimosef_flip_logs/train_val_test_split.json",
+    "save_folder": "/usr/data/derivatives/nimosef_v1/baseline",
+    "split_file": "/usr/data/derivatives/manifests_nimosef/dataset_manifest.json",
     "mode": "train",
     "load_model": false,
     "model_path": "/usr/data/derivatives/nimosef_flip_logs/baseline/experiment_20250312_131630/model.pth",

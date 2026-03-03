@@ -4,10 +4,10 @@
 #SBATCH --error=/cluster/home/ja1659/logs/nimosef_%A_%a.err
 #SBATCH --time=24:00:00
 #SBATCH --mem=32G
+#SBATCH --qos=16cpu
 #SBATCH --cpus-per-task=12
-##SBATCH --gres=gpu:1
 #SBATCH --gres=gpu:rtx6000:1
-#SBATCH --partition=rad
+#SBATCH --partition=rad2
 #SBATCH --account=rad
 #SBATCH --exclude=gpunode01
 
@@ -16,10 +16,10 @@ singularity_path='/data/bdip2/jbanusco/SingularityImages'
 singularity_img=${singularity_path}/nimosef_0.0.sif
 
 # Dataset path
-dataset_path="/data/bdip2/jbanusco/UKB_Cardiac_BIDS"
+dataset_path="/data/bdip2/jbanusco/Test_NIMOSEF_Dataset"
 
 # Code path
-code_path='/cluster/home/ja1659/Code/nimosef'
+code_path='/cluster/home/ja1659/Code/nimosef-v1'
 
 # Logs path
 logs_folder=${dataset_path}/derivatives/nimosef_flip_logs
@@ -31,7 +31,7 @@ docker_code='/usr/src'
 docker_log='/usr/logs'
 
 # Path to config file
-config_file="${code_path}/configs/config_cluster_motion_v1_continue.json"
+config_file="${code_path}/nimosef/config/config_baseline.json"
 
 # Extract parameters from JSON using Python
 config_params=$(python3 -c "
@@ -46,6 +46,6 @@ echo "Using config parameters: ${config_params}"
 # Train the dataset
 singularity exec --nv \
 --bind ${dataset_path}:${docker_data} \
---bind ${code_path}/src:${docker_code} \
+--bind ${code_path}:${docker_code} \
 --bind ${logs_folder}:${docker_log} \
-${singularity_img} /bin/bash -c "cd ${docker_code} && python -m nimosef.training.train ${config_params}"
+${singularity_img} /bin/bash -c "cd ${docker_code} && python3 -m nimosef.training.train ${config_params}"
