@@ -12,6 +12,7 @@ from nimosef.models.nimosef import MultiHeadNetwork
 from nimosef.data.dataset import NiftiDataset, nifti_collate_fn
 from nimosef.training.logging import TrainingLogger, LossTracker
 from nimosef.training.schedulers import ClampedStepLR
+from nimosef.training.args import get_inference_parser
 from nimosef.losses.base import dice_loss
 from nimosef.losses.composite import CompositeLoss
 from nimosef.utils.core import save_checkpoint, label_to_color
@@ -343,3 +344,15 @@ def inference_training(args, model=None, split=None, device=None):
     print(f"Validation model saved to {validation_model_filename}")
 
     return model
+
+
+def main():
+    # Load parser with defaults
+    parser = get_inference_parser()
+    args = parser.parse_args()
+    print(">>> Starting inference on", args.data_folder)
+    inference_training(args)
+
+
+if __name__ == '__main__':
+    main()

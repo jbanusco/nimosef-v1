@@ -13,6 +13,7 @@ from nimosef.data.dataset import NiftiDataset, nifti_collate_fn
 from nimosef.training.logging import TrainingLogger, LossTracker
 from nimosef.training.schedulers import ClampedStepLR
 from nimosef.training.inference import inference_training
+from nimosef.training.args import get_train_parser
 
 from nimosef.utils.core import save_checkpoint, label_to_color
 from nimosef.losses.composite import CompositeLoss
@@ -358,3 +359,13 @@ def train_model(args):
     tracker.save_losses(os.path.join(save_folder, "losses.json"))
     writer.flush()
     writer.close()
+
+def main():
+    # Load parser with defaults
+    parser = get_train_parser()
+    args = parser.parse_args()
+    print(">>> Starting training on", args.data_folder)
+    train_model(args)
+
+if __name__ == '__main__':
+    main()
