@@ -5,7 +5,7 @@
 #SBATCH --time=24:00:00
 #SBATCH --mem=32G
 #SBATCH --cpus-per-task=12
-##SBATCH --gres=gpu:1
+#SBATCH --qos=16cpu
 #SBATCH --gres=gpu:rtx6000:1
 #SBATCH --partition=rad
 #SBATCH --account=rad
@@ -19,7 +19,7 @@ singularity_img=${singularity_path}/nimosef_0.0.sif
 dataset_path="/data/bdip2/jbanusco/UKB_Cardiac_BIDS"
 
 # Code path
-code_path='/cluster/home/ja1659/Code/nimosef'
+code_path='/cluster/home/ja1659/Code/nimosef-v1'
 
 # Logs path
 logs_folder=${dataset_path}/derivatives/nimosef_flip_logs
@@ -52,7 +52,7 @@ print(' '.join(f'--{key} {value}' for key, value in config.items() if value is n
     # Run inference in the dataset
     singularity exec --nv \
     --bind ${dataset_path}:${docker_data} \
-    --bind ${code_path}/src:${docker_code} \
+    --bind ${code_path}:${docker_code} \
     --bind ${logs_folder}:${docker_log} \
     ${singularity_img} /bin/bash -c "cd ${docker_code} && python -m nimosef.training.generate_results ${config_params}"
 done
